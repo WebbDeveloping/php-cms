@@ -87,7 +87,6 @@
         <!-- MAIN START -->
         <div class="col-sm-8">
             <h1>Welcome to My PHP site</h1>
-            <h1 class='lead'>The Complete Responsive CMS Blog by Jazeb Akram</h1>
             <?php 
             echo ErrorMessage();
             echo SuccessMessage();
