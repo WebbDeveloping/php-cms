@@ -1,51 +1,65 @@
 <?php require_once("Includes/DB.php");?>
 <?php require_once("Includes/Functions.php");?>
 <?php require_once("Includes/Sessions.php");?>
-<?php Confirm_Login(); ?>
+<?php
+$_SESSION["TrackingURL"]=$_SERVER["PHP_SELF"];
+Confirm_Login(); ?>
+
 <?php 
-$SearchQueryParameter = $_GET["id"];
+$IMG = './Images/avatar.png';
+// fetching existing admin data
+$AdminId = $_SESSION["UserId"];
+$ConnectingDB;
+$sql = "SELECT aname FROM admins WHERE id=$AdminId";
+$stmt=$ConnectingDB->query($sql);
+while($DataRows=$stmt->fetch()){
+    $ExistingName = $DataRows['aname'];
+}
+
+
 if(isset($_POST["Submit"])){
-  $PostTitle = $_POST["PostTitle"];
-  $Category = $_POST["Category"];
-  $Image = $_FILES["ImageSelect"]["name"];
-  $Target = "./Upload/".basename($_FILES["ImageSelect"]["name"]);
-  $PostText = $_POST["PostDescription"];
+  $AName = $_POST["Name"];
+  $AHeadline = $_POST["Headline"];
+  $ABio = $_POST["Bio"];
+  $Image = $_FILES["Image"]["name"];
+  $Target = "Images/".basename($_FILES["Image"]["name"]);
 //   CANT GET THE IMAGE TO UPLOAD :(
-  $Admin = $_SESSION["UserName"];
-  date_default_timezone_set("America/Denver");
-$CurrentTime=time();
-$DateTime=strftime("%B-%d-%Y %H:%M:%S" , $CurrentTime);
 
-  if(empty($PostTitle)){
-    $_SESSION["ErrorMessage"]= "Title Cant be empty";
-    Redirect_to("Posts.php");
-  }elseif(strlen($PostTitle)< 5){
-    $_SESSION["ErrorMessage"]= "Post title should be greater than 5 characters";
-    Redirect_to("Posts.php");
-  }elseif(strlen($PostText)> 9999){
-    $_SESSION["ErrorMessage"]= "Post Description should be less than 1000 characters";
-    Redirect_to("Posts.php");
+
+if(strlen($AHeadline)> 12){
+    $_SESSION["ErrorMessage"]= "Headline should be less than 12 characters";
+    Redirect_to("MyProfile.php");
+  }elseif(strlen($ABio)> 500){
+    $_SESSION["ErrorMessage"]= "Bio should be less than 500 characters";
+    Redirect_to("MyProfile.php");
   } else {
-    $ConnectingDB;
-    if(!empty($_FILES["ImageSelect"]["name"])){
-      $sql = "UPDATE posts SET title = '$PostTitle',
-      category='$Category', image ='$Image', post='$PostText'
-      WHERE id = $SearchQueryParameter";
-    } else{
-      $sql = "UPDATE posts SET title = '$PostTitle',
-      category='$Category', post='$PostText'
-      WHERE id = $SearchQueryParameter";
+    global $ConnectingDB;
+    if(!empty($_FILES["Image"]["name"])){
+      $sql = 
+      "UPDATE admins 
+      SET aname = '$AName',
+      aheadline='$AHeadline', 
+      abio ='$ABio', aimage='$Image'
+      WHERE id = '$AdminId'";
+    } else {
+      $sql = 
+      "UPDATE admins 
+      SET aname = '$AName',
+      aheadline='$AHeadline', 
+      abio ='$ABio'
+      WHERE id = '$AdminId'";
     }
-
-            $Execute=$ConnectingDB->query($sql);  
-              move_uploaded_file($_FILES["ImageSelect"]["tmp_name"], $Target);
-              if($Execute){
-                $_SESSION["SuccessMessage"]="Post with id : ".$ConnectingDB->lastInsertId()." Post Updated Succesfully!";
-                Redirect_to("Posts.php");
-              } else{
-                $_SESSION["ErrorMessage"]= "Something went wrong. Try Again!";
-                Redirect_to("Posts.php");
-              }
+      $Execute=$ConnectingDB->query($sql);
+      move_uploaded_file($_FILES["Image"]["tmp_name"], $Target);
+      if($Execute){
+        $_SESSION["SuccessMessage"]="Details Updated Succesfully";
+        Redirect_to('MyProfile.php');
+      } else {
+          // BUG!!
+          // WHY WONT YOU EFFING UPDATE
+        $_SESSION["ErrorMessage"]="Something went wrong updating profile";
+        Redirect_to('MyProfile.php');
+      }
   }
 }
 ?>
@@ -70,7 +84,7 @@ $DateTime=strftime("%B-%d-%Y %H:%M:%S" , $CurrentTime);
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="Css/Styles.css" />
-    <title>Edit Post</title>
+    <title>My Profile</title>
   </head>
   <body>
     <!-- Navbar -->
@@ -129,7 +143,7 @@ $DateTime=strftime("%B-%d-%Y %H:%M:%S" , $CurrentTime);
       <div class="container">
         <div class="row">
             <div class='col-md-12'>
-                <h1><i class='fas fa-edit' style='color:#72aae1'></i> Edit Post</h1>
+                <h1><i class='fas fa-user mr-2' style='color:#72aae1'></i> My Profile</h1>
             </div>
             
         </div>
@@ -144,71 +158,63 @@ $DateTime=strftime("%B-%d-%Y %H:%M:%S" , $CurrentTime);
 <!-- MAIN AREA -->
 <section class='container py-2 mb-4'>
     <div class='row' >
-      <div class='offset-lg-1 col-lg-10' style="min-height:400px;" >
+        <!-- Left area -->
+        <div class='col-md-3'>
+            <div class='card'>
+                <div class='card-header bg-dark text-light'>
+                    <h3><?php echo $ExistingName ?></h3>
+                </div>
+                <div class='card-body'>
+                  <img src='<?php echo $IMG?>' class="block img-fluid mb-3"alt="">
+                  <div class="">
+                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+                  </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        
+        <!-- RIGHT AREA -->
+
+      <div class='col-md-9' style="min-height:400px;" >
       <?php 
       echo ErrorMessage();
       echo SuccessMessage();
-      $ConnectingDB;
-      $sql = "SELECT * FROM posts WHERE id = $SearchQueryParameter";
-      $stmtPost = $ConnectingDB->query($sql);
-      while($DataRows = $stmtPost->fetch()){
-            $TitleToBeUpdated = $DataRows['title'];
-            $CategoryToBeUpdated = $DataRows['category'];
-            $ImageToBeUpdated = $DataRows['image'];
-            $PostToBeUpdated = $DataRows["post"];
-      }
       ?>
-        <form class="" action="EditPost.php?id=<?php echo $SearchQueryParameter; ?>" method="post" enctype="multipart/form-data">
-          <div class='card bg-secondary text-light mb-3'>
-              <div class='card-body bg-dark'>
+        <form class="" action="MyProfile.php" method="post" enctype="multipart/form-data">
+          <div class='card bg-dark text-light'>
+          <div class="card-header bg-secondary text-light">
+          <h4>Edit Profile</h4>
+          </div>
+              <div class='card-body'>
                 <div class='form-group'>
-                  <label for="title">
-                    <span class="FieldInfo">Post Title: </span>
-                  </label>
-                  <input class='form-control' type="text" name="PostTitle" id="title" placeholder="Type title here.." value="<?php echo $TitleToBeUpdated ?>">
-                </div>  
-                <div class='form-group'>
-                    <span class='FieldInfo'>Existing Category: </span> 
-                    <?php echo $CategoryToBeUpdated; ?>
-                    <br>
-                  <label for="CategoryTitle">
-                    <span class="FieldInfo">Choose Category: </span>
-                  </label>
-                  <select class='form-control' id="CategoryTitle" name='Category'>
-                      <!-- Fetching all categories from table -->
-                      <?php $ConnectingDB; 
-                      $sql = "SELECT id, title FROM category";
-                      $stmt = $ConnectingDB->query($sql);
-                      while($DataRows = $stmt->fetch()){
-                          $Id = $DataRows["id"];
-                          $CategoryName = $DataRows["title"];
-                      
-                      ?>
-                      <option><?php echo $CategoryName; ?></option>
-                      <?php } ?>
-                  </select>
+                  <input class='form-control' type="text" name="Name" id="title" placeholder="Type name here.." value="">
                 </div>  
                 <div class="form-group">
-                <span class='FieldInfo'> Existing Image: </span> 
-                    <?php echo $ImageToBeUpdated; ?>
-                    <!-- CANT GET IMAGES TO WORK... PLEASE HELP -->
-                    <!-- <img src="Upload/<?php echo $ImageToBeUpdated;?>" width="170px"; height="70px";> -->
+                  <input class="form-control" type="text" value="" id="title" placeholder="Headline" name="Headline">
+                  <small class="text-muted"> Add A professional headline.</small>
+                  <span class="text-danger">Not more than 12 charachters</span>
+                </div>  
+                <div class="form-group">
+  
+                  
+                  <textarea class="form-control" id="Post" name="Bio" placeholder="Bio" rows="8" cols="80"></textarea>
+                </div>
+
+                
+                <div class="form-group">
                   <div class="custom-file">
-                        <input class="custom-file-input" type="File" name="ImageSelect" id="imageSelect" value="">
-                        <label for="ImageSelect" class='custom-file-label'>Select Image</label>
+                        <input class="custom-file-input" type="File" name="Image" id="image" value="">
+                        <label for="Image" class="custom-file-label">Select Image</label>
                   </div>
                 </div>
-                <div class="form-group">
-                <label for="Post">
-                    <span class="FieldInfo">Post:     </span>
-                  </label>   
-                  
-                  <textarea class='form-control' id="Post" name="PostDescription" rows="8" cols="80"><?php echo $PostToBeUpdated;?></textarea>
-                </div>
-                <div class='row'>
-                  <div class='col-lg-6 mb-2'>
-                    <a href="Dashboard.php" class='btn btn-warning btn-block'>
-                      <i class='fas fa-arrow-left'>Back To Dashboard</i>
+
+                <div class="row">
+                  <div class="col-lg-6 mb-2">
+                    <a href="Dashboard.php" class="btn btn-warning btn-block">
+                      <i class="fas fa-arrow-left">Back To Dashboard</i>
                     </a>
                   </div>
                   <div class='col-lg-6 mb-2'>

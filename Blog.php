@@ -112,7 +112,15 @@
               }
                 $sql = "SELECT * FROM posts ORDER BY id desc LIMIT $ShowPostsFrom, 5";
                 $stmt = $ConnectingDB->query($sql);
-            } else {
+            }elseif(isset($_GET["category"])){
+              $Category = $_GET["category"];
+              $sql= "SELECT * FROM posts WHERE category=:categoryName ORDER by id desc";
+              $stmt=$ConnectingDB->prepare($sql);
+              $stmt->bindValue(':categoryName', $Category);
+              $stmt->execute();
+            }
+                // default query
+             else {
                 $sql = "SELECT * FROM posts ORDER BY id desc LIMIT 0,3";
                 $stmt = $ConnectingDB->query($sql);
             }
@@ -244,8 +252,36 @@
                       
                     </div>
                   </div>
-
-
+<br>
+                  <div class='card'>
+                    <div class='card-header bg-info text-white'>
+                      <h2 class="lead"> Recent Posts</h2>
+                    </div>
+                    <div class='card-body'>
+                      <?php 
+                      $ConnectingDB;
+                      $sql = "SELECT * FROM posts ORDER BY id desc LIMIT 0,5";
+                      $stmt=$ConnectingDB->query($sql);
+                      while($rows =$stmt->fetch()){
+                        $PostId = $rows["id"];
+                        $PostTitle= $rows["title"];
+                        $DateTime= $rows["datetime"];
+                        $Image= $rows["image"];
+                      
+                      ?>
+                      <div class='media'>
+                        <img src=<?php echo $IMG?>  class='d-block img-fluid align-self-start'alt="" width="90" height='94'>
+                        <div class='media-body ml-2'>
+                          <a href="FullPost.php?id=<?php echo htmlentities($PostId)?>" target="_blank">
+                            <h6 class='lead'><?php echo htmlentities($PostTitle);?></h6>
+                          </a>
+                          <p class='small'><?php echo htmlentities($DateTime)?></p>
+                        </div>
+                      </div>
+                      <hr>
+                      <?php }?>
+                    </div>
+                  </div>
 
 
             </div>

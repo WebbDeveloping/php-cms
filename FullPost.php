@@ -245,8 +245,86 @@ if(isset($_POST["Submit"])){
             <!-- MAIN END -->
 
             <!-- SIDE ARE START -->
-            <div class="col-sm-4">
-                .
+            <div class="col-sm-4" >
+                <div class='card mt-4'>
+                  <div class='card-body'>
+                    <img src="<?php echo $DownImg;?>" class='d-block img-fluid mb-3' alt="">
+                    <div class='text-center'>
+                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. 
+                    Cumo sociis natoque penatibus et magnis dis p. Aenean commodo ligula eget dolor. Aenean massa. Cumi sociis natoque 
+                    penatibus et magnis dis p
+                    </div>
+                  </div>
+                </div>
+                <br>
+                <div class='card'>
+                  <div class='card-header bg-dark text-light'>
+                    <h2 class='lead'>Sign Up !</h2>
+                  </div>
+                  <div class='card-body'>
+                    <button type='button' class='btn btn-success btn-block text-center text-white mb-4' name='button'>Join The Forum</button>
+                    <button type='button' class='btn btn-danger btn-block text-center text-white mb-4' name='button'>Login</button>
+                    <div class='input-group mb-3'>
+                      <input class='form-control' name="" placeholder="Enter your email" value="">
+                      <div class='input-group-append'>
+                        <button type="button" class="btn btn-primary btn-sm text-center-text-white" name="button">Subscribe Now</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <br>
+                  <div class="card">
+                    <div class='card-header bg-primary text-light'>
+                      <h2 class='lead'>Categories</h2>
+                      </div>
+                      <div class='card-body'>
+                        <?php 
+                        $ConnectingDB;
+                        $sql = "SELECT * FROM category ORDER BY id desc";
+                        $stmt = $ConnectingDB->query($sql);
+                        while($DR = $stmt->fetch()){
+                          $CategoryId = $DR["id"];
+                          $Cn = $DR['title'];
+                          ?>
+                          <a href="Blog.php?category=<?php echo $Cn?>">
+                            <span class="heading"> <?php echo $Cn ?></span><br>
+                          </a>
+                        <?php } ?>
+                      
+                    </div>
+                  </div>
+<br>
+                  <div class='card'>
+                    <div class='card-header bg-info text-white'>
+                      <h2 class="lead"> Recent Posts</h2>
+                    </div>
+                    <div class='card-body'>
+                      <?php 
+                      $ConnectingDB;
+                      $sql = "SELECT * FROM posts ORDER BY id desc LIMIT 0,5";
+                      $stmt=$ConnectingDB->query($sql);
+                      while($rows =$stmt->fetch()){
+                        $PostId = $rows["id"];
+                        $PostTitle= $rows["title"];
+                        $DateTime= $rows["datetime"];
+                        $Image= $rows["image"];
+                      
+                      ?>
+                      <div class='media'>
+                        <img src=<?php echo $IMG?>  class='d-block img-fluid align-self-start'alt="" width="90" height='94'>
+                        <div class='media-body ml-2'>
+                          <a href="FullPost.php?id=<?php echo htmlentities($PostId)?>" target="_blank">
+                            <h6 class='lead'><?php echo htmlentities($PostTitle);?></h6>
+                          </a>
+                          <p class='small'><?php echo htmlentities($DateTime)?></p>
+                        </div>
+                      </div>
+                      <hr>
+                      <?php }?>
+                    </div>
+                  </div>
+
+
             </div>
                 <!-- SIDE ARE END -->
     </div>
